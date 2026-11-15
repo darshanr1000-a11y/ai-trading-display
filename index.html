@@ -1,124 +1,165 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI Trading Team Virtual Office</title>
+<title>AI Trading Team Office</title>
 <style>
-:root{--bg:#0f1318;--card:#181e26;--line:#2a323d;--tx:#e8edf2;--mu:#8b97a5;--g:#3fb68b;--y:#e0b04a;--r:#e0645c;--b:#5b9bd5}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,sans-serif;padding:16px;max-width:960px;margin:auto}
+:root{--bg:#10151b;--card:#181e26;--line:#2a323d;--tx:#e8edf2;--mu:#8b97a5;--g:#3fb68b;--y:#e0b04a;--r:#e0645c;--b:#5b9bd5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,sans-serif;padding:14px;max-width:960px;margin:auto}
 h1{font-size:20px;margin:0}.sub{color:var(--mu);font-size:12px}
-.top{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+#banner{border-radius:12px;padding:14px 16px;margin:12px 0;font-size:17px;font-weight:600;border:1px solid var(--line)}
+#banner small{display:block;font-weight:400;font-size:13px;opacity:.9;margin-top:2px}
+.b-run{background:#12301f;border-color:#2f7d52}.b-idle{background:#332b14;border-color:#8a7020}.b-off{background:#33191a;border-color:#8a3a36}
+.top{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.lbl{color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.06em}.val{font-size:18px;font-weight:600}
+.lbl{color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.06em}.val{font-size:17px;font-weight:600}
+#now{background:#0b0e12;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:16px;min-height:48px}
 .bar{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
 button{background:var(--b);color:#fff;border:0;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
 #wrap{width:100%;overflow:hidden;border:1px solid var(--line);border-radius:12px}
-#office{position:relative;width:900px;height:540px;transform-origin:0 0;background:#1a2028;background-image:linear-gradient(#222a34 1px,transparent 1px),linear-gradient(90deg,#222a34 1px,transparent 1px);background-size:30px 30px}
-.room{position:absolute;border:2px dashed #34404d;border-radius:12px;color:#5d6b7b;font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:4px 8px}
-.desk{position:absolute;width:70px;height:26px;background:#2d3743;border:1px solid #3a4756;border-radius:5px}
-.emp{position:absolute;width:60px;text-align:center;transition:left 1.3s ease-in-out,top 1.3s ease-in-out;z-index:5}
+#office{position:relative;width:900px;height:560px;transform-origin:0 0;background:#c9b79c;transition:filter 1s}
+#office.dark{filter:brightness(.45) saturate(.7)}
+#floor{position:absolute;left:0;right:0;top:60px;bottom:0;background:repeating-linear-gradient(90deg,#b9a487 0 58px,#b09b7d 58px 60px),#b9a487}
+#wall{position:absolute;left:0;right:0;top:0;height:60px;background:#e9e2d3;border-bottom:6px solid #8a7658}
+.win{position:absolute;top:8px;width:90px;height:44px;background:linear-gradient(#9fd3f2,#d8effb);border:4px solid #fff;border-radius:3px}
+#clock{position:absolute;left:430px;top:6px;width:48px;height:48px;border-radius:50%;background:#fff;border:3px solid #444;font-size:9px;text-align:center;line-height:42px;color:#222;font-weight:700}
+.room{position:absolute;border:3px solid #7d6a50;border-radius:8px;background:#0000000d;color:#4d3f2d;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px}
+.rug{position:absolute;border-radius:10px;opacity:.5}
+.desk{position:absolute;width:72px;height:30px;background:#7a5a3a;border:2px solid #5a4028;border-radius:4px}
+.desk i{position:absolute;left:22px;top:-18px;font-style:normal;font-size:20px}
+.plant{position:absolute;font-size:26px}
+.board{position:absolute;background:#fff;border:3px solid #888;border-radius:3px;font-size:9px;color:#333;padding:2px 4px}
+.emp{position:absolute;width:62px;text-align:center;transition:left 1.3s ease-in-out,top 1.3s ease-in-out;z-index:5}
 .emp .face{font-size:30px;line-height:1}
 .emp.walk .face{animation:step .35s infinite alternate}
 .emp.work .face{animation:type .25s infinite alternate}
+.emp.sleep .face{filter:grayscale(.6);transform:rotate(-12deg)}
 @keyframes step{to{transform:translateY(-5px) rotate(5deg)}}
 @keyframes type{to{transform:translateY(2px)}}
-.emp .nm{font-size:10px;color:#c7d0da;background:#0008;border-radius:4px;padding:0 3px;white-space:nowrap}
-.emp .bubble{position:absolute;bottom:62px;left:50%;transform:translateX(-50%);background:#fff;color:#111;border-radius:8px;padding:3px 7px;font-size:11px;width:max-content;max-width:140px;opacity:0;transition:opacity .25s;z-index:9}
+.emp .nm{font-size:10px;color:#fff;background:#000a;border-radius:4px;padding:0 4px;white-space:nowrap;display:inline-block}
+.emp .bubble{position:absolute;bottom:62px;left:50%;transform:translateX(-50%);background:#fff;color:#111;border-radius:8px;padding:3px 7px;font-size:11px;width:max-content;max-width:150px;opacity:0;transition:opacity .25s;z-index:9;box-shadow:0 1px 4px #0006}
 .emp .bubble.on{opacity:1}
 .emp .doc{position:absolute;right:-6px;top:20px;font-size:18px;display:none}
 .emp.carry .doc{display:block}
 .prog{position:absolute;left:5px;right:5px;bottom:-9px;height:4px;background:#0006;border-radius:3px;overflow:hidden;display:none}
 .emp.work .prog{display:block}.prog i{display:block;height:100%;width:0;background:var(--g)}
-#log{background:#0b0e12;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:12px/1.6 ui-monospace,monospace;height:130px;overflow:auto;color:#a8b4c2;margin-top:10px}
-table{width:100%;border-collapse:collapse;margin-top:10px}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{color:var(--mu);font-weight:500;font-size:11px}
-.tag{font-size:11px;border-radius:99px;padding:1px 8px;background:#1d3a30;color:var(--g)}
+#last{margin-top:10px}
+.line{padding:6px 0;border-bottom:1px solid var(--line);font-size:15px}
 .note{color:var(--mu);font-size:12px;margin-top:12px}
 </style></head><body>
-<h1>AI Trading Team: Virtual Office</h1>
-<div class="sub">Paper trading only (fake money) · Connected to the trading bot on GitHub · Refreshes every 30 seconds</div>
+<h1>AI Trading Team: Our Office</h1>
+<div class="sub">Paper trading only (fake money). This page is connected to the real trading bot.</div>
+<div id="banner" class="b-off">Loading...</div>
 <div class="top">
-<div class="card"><div class="lbl">Account equity</div><div class="val" id="eq">-</div></div>
-<div class="card"><div class="lbl">Last real run</div><div class="val" id="lr">-</div></div>
-<div class="card"><div class="lbl">Open positions</div><div class="val" id="pos">-</div></div>
-<div class="card"><div class="lbl">Now in the office</div><div class="val" id="cur">-</div></div>
+<div class="card"><div class="lbl">Account (fake money)</div><div class="val" id="eq">-</div></div>
+<div class="card"><div class="lbl">Next daily run</div><div class="val" id="nx" style="font-size:14px">-</div></div>
+<div class="card"><div class="lbl">US time now</div><div class="val" id="et" style="font-size:14px">-</div></div>
 <div class="card"><div class="lbl">Data updated</div><div class="val" id="upd" style="font-size:13px">-</div></div>
 </div>
-<div class="bar"><button id="pp">Pause</button><button id="sp">Speed: normal</button><span class="sub" id="mode"></span></div>
+<div id="now">...</div>
+<div class="bar"><button id="rp">Watch a replay of the last decision</button><span class="sub" id="mode"></span></div>
 <div id="wrap"><div id="office">
-<div class="room" style="left:20px;top:20px;width:400px;height:130px">Research floor</div>
-<div class="room" style="left:450px;top:20px;width:200px;height:130px">Debate room</div>
-<div class="room" style="left:680px;top:20px;width:200px;height:130px">Research manager</div>
-<div class="room" style="left:300px;top:190px;width:300px;height:120px">Trading desk</div>
-<div class="room" style="left:20px;top:340px;width:400px;height:170px">Risk corner</div>
-<div class="room" style="left:450px;top:340px;width:200px;height:170px">Portfolio manager</div>
-<div class="room" style="left:680px;top:340px;width:200px;height:170px">Broker window (Alpaca)</div>
+<div id="wall"></div><div id="floor"></div>
+<div class="win" style="left:30px"></div><div class="win" style="left:150px"></div><div class="win" style="left:270px"></div>
+<div id="clock">ET</div>
+<div class="win" style="left:560px"></div><div class="win" style="left:680px"></div><div class="win" style="left:790px;width:80px"></div>
+<div class="rug" style="left:290px;top:195px;width:320px;height:120px;background:#5b7b9a"></div>
+<div class="room" style="left:20px;top:75px;width:400px;height:120px">Research floor</div>
+<div class="room" style="left:450px;top:75px;width:200px;height:120px">Debate room</div>
+<div class="room" style="left:680px;top:75px;width:200px;height:120px">Research manager</div>
+<div class="room" style="left:300px;top:205px;width:300px;height:110px">Trading desk</div>
+<div class="room" style="left:20px;top:345px;width:400px;height:180px">Risk corner</div>
+<div class="room" style="left:450px;top:345px;width:200px;height:180px">Portfolio manager</div>
+<div class="room" style="left:680px;top:345px;width:200px;height:180px">Broker window (Alpaca)</div>
+<div class="board" style="left:520px;top:92px;width:70px">Bull vs Bear</div>
+<span class="plant" style="left:425px;top:150px">🪴</span><span class="plant" style="left:640px;top:240px">🪴</span><span class="plant" style="left:10px;top:300px">🪴</span><span class="plant" style="left:860px;top:300px">🪴</span>
 </div></div>
-<div id="log"></div>
-<table id="hist"><tr><th>Time (UTC)</th><th>Stock</th><th>Event</th><th>Result</th></tr></table>
-<div class="note">The office re-enacts the team's real decisions from the bot's latest log. When no real run is available it shows a demo. Not financial advice.</div>
+<div class="card" id="last"><div class="lbl">What the team decided last time</div><div id="lastTxt">-</div></div>
+<div class="note">The market clock knows weekends and trading hours (US Eastern time) but not US holidays. Not financial advice.</div>
 <script>
-var off=document.getElementById('office'),wrap=document.getElementById('wrap'),logEl=document.getElementById('log');
-function fit(){var s=Math.min(1,wrap.clientWidth/900);off.style.transform='scale('+s+')';wrap.style.height=(540*s)+'px'}
+var off=document.getElementById('office'),wrap=document.getElementById('wrap');
+function fit(){var s=Math.min(1,wrap.clientWidth/900);off.style.transform='scale('+s+')';wrap.style.height=(560*s)+'px'}
 window.addEventListener('resize',fit);fit();
-var speed=1,paused=false,S=null;
-function sleep(ms){return new Promise(function(r){var t=ms/speed,st=Date.now();(function w(){if(paused){setTimeout(w,200);st+=200;return}if(Date.now()-st>=t)r();else setTimeout(w,40)})()})}
-function log(t){logEl.innerHTML+=new Date().toTimeString().slice(0,8)+'  '+t+'<br>';logEl.scrollTop=logEl.scrollHeight}
-var P={mkt:['📈','Market Analyst',40,70],soc:['💬','Social Analyst',125,70],news:['📰','News Analyst',210,70],fund:['📊','Fundamentals',295,70],
-bull:['🐂','Bull Researcher',480,70],bear:['🐻','Bear Researcher',570,70],rm:['🧑‍⚖️','Research Manager',750,70],tr:['💼','Trader',420,235],
-ra:['🔥','Aggressive Risk',40,400],rn:['⚖️','Neutral Risk',140,400],rc:['🛡️','Cautious Risk',240,400],pm:['🏛️','Portfolio Manager',520,400],br:['🏦','Broker',750,400]};
+var gen=0,S=null,runner=false;
+function sleep(ms){var g=gen;return new Promise(function(res,rej){setTimeout(function(){if(g!==gen)rej('abort');else res()},ms)})}
+var P={mkt:['📈','Market Analyst',40,100],soc:['💬','Social Analyst',125,100],news:['📰','News Analyst',210,100],fund:['📊','Fundamentals',295,100],
+bull:['🐂','Bull Researcher',480,100],bear:['🐻','Bear Researcher',570,100],rm:['🧑‍⚖️','Research Manager',750,100],tr:['💼','Trader',430,235],
+ra:['🔥','Aggressive Risk',40,420],rn:['⚖️','Neutral Risk',140,420],rc:['🛡️','Cautious Risk',240,420],pm:['🏛️','Portfolio Manager',520,420],br:['🏦','Broker',750,420]};
 var E={};
-Object.keys(P).forEach(function(k){var p=P[k];var dk=document.createElement('div');dk.className='desk';dk.style.left=(p[2]-5)+'px';dk.style.top=(p[3]+48)+'px';off.appendChild(dk);
+Object.keys(P).forEach(function(k){var p=P[k];var dk=document.createElement('div');dk.className='desk';dk.style.left=(p[2]-5)+'px';dk.style.top=(p[3]+48)+'px';dk.innerHTML='<i>🖥️</i>';off.appendChild(dk);
 var e=document.createElement('div');e.className='emp';e.style.left=p[2]+'px';e.style.top=p[3]+'px';
 e.innerHTML='<div class="bubble"></div><div class="face">'+p[0]+'</div><div class="doc">📄</div><div class="nm">'+p[1]+'</div><div class="prog"><i></i></div>';
 off.appendChild(e);E[k]={el:e,hx:p[2],hy:p[3],b:e.querySelector('.bubble'),pg:e.querySelector('.prog i')}});
+function now(t){document.getElementById('now').innerHTML=t}
 async function go(k,x,y){var e=E[k];e.el.classList.add('walk');e.el.style.left=x+'px';e.el.style.top=y+'px';await sleep(1350);e.el.classList.remove('walk')}
 function home(k){return go(k,E[k].hx,E[k].hy)}
 async function say(k,t,ms){var b=E[k].b;b.textContent=t;b.classList.add('on');await sleep(ms||1400);b.classList.remove('on')}
-async function work(k,t,ms){var e=E[k];e.el.classList.add('work');e.b.textContent=t;e.b.classList.add('on');var s=Date.now();e.pg.style.width='0';
-await new Promise(function(r){(function tick(){var f=Math.min(1,(Date.now()-s)*speed/ms);e.pg.style.width=(f*100)+'%';if(f>=1)r();else setTimeout(tick,60)})()});
+async function work(k,t,ms){var e=E[k];e.el.classList.add('work');e.b.textContent=t;e.b.classList.add('on');e.pg.style.width='0';
+var n=Math.ceil(ms/80),i;for(i=1;i<=n;i++){await sleep(80);e.pg.style.width=(i/n*100)+'%'}
 e.el.classList.remove('work');e.b.classList.remove('on')}
 function carry(k,on){E[k].el.classList.toggle('carry',on)}
-async function cycle(tk,r,real){
-document.getElementById('cur').textContent=tk+(real?' (real result)':' (demo)');log('=== Analysis of '+tk+(real?' [REAL decision]':' [demo]')+' ===');
-var a=['mkt','soc','news','fund'],msg=['Reading charts','Scanning sentiment','Reading headlines','Checking financials'];
+function resetAll(sleepy){Object.keys(E).forEach(function(k){var e=E[k];e.el.classList.remove('walk','work','carry');e.b.classList.remove('on');e.pg.style.width='0';
+e.el.style.left=e.hx+'px';e.el.style.top=e.hy+'px';e.el.classList.toggle('sleep',!!sleepy);
+if(sleepy){e.b.textContent='zzz';e.b.classList.add('on')}})}
+var HUM={Buy:'BUY more',Overweight:'buy a little more',Hold:'do nothing (HOLD)',Underweight:'sell a little',Sell:'SELL'};
+async function cycle(tk,r,replay){
+var tag=replay?'(replay of the real decision) ':'';
+now(tag+'The team starts studying <b>'+tk+'</b>.');
+var a=['mkt','soc','news','fund'],msg=['Reading price charts','Checking social media mood','Reading the news','Checking company finances'];
+now(tag+'<b>4 analysts</b> are studying '+tk+': charts, social media, news and company finances.');
 await Promise.all(a.map(function(k,i){return work(k,msg[i]+'...',2600+i*300)}));
-log('Analysts finished');a.forEach(function(k){carry(k,true)});
-await Promise.all([go('mkt',480,120),go('soc',540,120),go('news',600,120),go('fund',560,95)]);
-a.forEach(function(k){carry(k,false)});
-await say('bull','Strong demand ahead, buy!',1500);await say('bear','Valuation is stretched.',1500);
-await say('bull','Earnings beat last quarter.',1400);await say('bear','Risks are being ignored.',1400);
-log('Bull and bear debated '+tk);
-carry('bull',true);await go('bull',700,100);await say('rm','Reviewing both sides...',1500);carry('bull',false);
-await work('rm','Weighing the debate',2200);
-carry('rm',true);await go('rm',470,245);carry('rm',false);carry('tr',true);
-await work('tr','Drafting trade plan',2200);
-await Promise.all([go('tr',230,300),go('rm',750,70),go('bull',E.bull.hx,E.bull.hy),home('mkt'),home('soc'),home('news'),home('fund')]);
+now(tag+'The analysts finished and are carrying their reports to the debate room.');a.forEach(function(k){carry(k,true)});
+await Promise.all([go('mkt',480,150),go('soc',540,150),go('news',600,150),go('fund',560,125)]);a.forEach(function(k){carry(k,false)});
+now(tag+'The <b>Bull</b> (wants to buy) and the <b>Bear</b> (wants to avoid) are arguing about '+tk+'.');
+await say('bull','Strong demand ahead, buy!',1500);await say('bear','Price looks too high.',1500);await say('bull','Earnings beat last quarter.',1400);await say('bear','Risks are being ignored.',1400);
+now(tag+'The Bull takes both arguments to the <b>Research Manager</b>, who decides who is right.');
+carry('bull',true);await go('bull',700,130);carry('bull',false);await work('rm','Weighing the debate',2200);
+now(tag+'The manager gives a plan to the <b>Trader</b>, who writes up a trade idea.');
+carry('rm',true);await go('rm',470,255);carry('rm',false);await work('tr','Drafting a trade plan',2200);
+await Promise.all([go('tr',230,330),go('rm',E.rm.hx,E.rm.hy),go('bull',E.bull.hx,E.bull.hy),home('mkt'),home('soc'),home('news'),home('fund')]);
+now(tag+'The <b>3 risk officers</b> check the idea: one wants to bet bigger, one balanced, one careful.');
 await Promise.all([work('ra','Could go bigger',2000),work('rn','Size looks fair',2300),work('rc','Keep it small',2000)]);
-log('Risk team reviewed the plan');
-await go('tr',470,330);await say('tr','Risk team signed off',1200);await go('tr',520,360);carry('tr',false);
-await work('pm','Making the final call',2200);
-await say('pm','Final rating: '+r,1700);log(tk+' rating: '+r+(real?' (REAL)':' (demo)'));
-if(r!=='Hold'){carry('pm',true);await go('pm',700,400);carry('pm',false);
-await say('br',(r==='Buy'||r==='Overweight'?'BUY ':'SELL ')+tk+' (paper)',2000);log('Paper order sent to Alpaca');await home('pm')}
-else{await say('pm','No trade needed',1200)}
-await Promise.all([home('tr'),home('rm'),home('ra'),home('rn'),home('rc')]);await sleep(1500)}
-function latest(){var seen={},out=[];if(!S||!S.events)return out;
-for(var i=S.events.length-1;i>=0;i--){var e=S.events[i];if(e.event==='rating'&&!seen[e.ticker]){seen[e.ticker]=1;out.unshift(e)}}return out}
-function render(){if(!S)return;
-document.getElementById('eq').textContent=S.equity?'$'+Number(S.equity).toLocaleString():'-';
-document.getElementById('pos').textContent=(S.positions!=null?S.positions:'-');
-document.getElementById('upd').textContent=S.updated||'-';
-var l=latest();document.getElementById('lr').textContent=l.length?l[l.length-1].ticker+': '+l[l.length-1].rating:'none yet';
-var h='<tr><th>Time (UTC)</th><th>Stock</th><th>Event</th><th>Result</th></tr>';
-(S.events||[]).slice(-8).reverse().forEach(function(e){h+='<tr><td>'+(e.ts||'').slice(0,16).replace('T',' ')+'</td><td>'+(e.ticker||'-')+'</td><td>'+e.event+'</td><td><span class="tag">'+(e.rating||e.reason||e.side||e.error||'ok')+'</span></td></tr>'});
-document.getElementById('hist').innerHTML=h}
-async function load(){try{var r=await fetch('status.json?'+Date.now());S=await r.json();render()}catch(e){}}
-async function main(){await load();setInterval(load,30000);var i=0;
-while(true){var l=latest(),d=['AAPL','NVDA'],tk,r,real=false;
-if(l.length){var it=l[i%l.length];tk=it.ticker;r=it.rating;real=true}
-else{tk=d[i%2];r=['Buy','Overweight','Hold','Underweight','Sell'][Math.floor(Math.random()*5)]}
-document.getElementById('mode').textContent=real?'Showing real decisions from the bot':'No real run yet: showing demo';
-await cycle(tk,r,real);i++}}
-document.getElementById('pp').onclick=function(){paused=!paused;this.textContent=paused?'Resume':'Pause'};
-document.getElementById('sp').onclick=function(){speed=speed===1?2:(speed===2?0.5:1);this.textContent='Speed: '+(speed===1?'normal':speed===2?'fast':'slow')};
-main();
+now(tag+'The trader takes the checked plan to the <b>Portfolio Manager</b> for the final call.');
+carry('tr',true);await go('tr',500,380);carry('tr',false);await work('pm','Making the final call',2200);
+if(r){await say('pm','Final: '+r,1700);
+now(tag+'Final decision for <b>'+tk+'</b>: <b>'+r+'</b> ('+HUM[r]+').');
+if(r!=='Hold'){carry('pm',true);await go('pm',700,420);carry('pm',false);await say('br','Order placed (fake money)',2000);await home('pm')}else{await say('pm','No trade needed',1500)}}
+else{await say('pm','Deciding...',1500);now('The Portfolio Manager is finishing the decision for <b>'+tk+'</b>. The result will appear below when the run ends.')}
+await Promise.all([home('tr'),home('rm'),home('ra'),home('rn'),home('rc'),home('pm'),home('bull')]);await sleep(1200)}
+function etParts(){var p=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short',hour:'numeric',minute:'numeric',hour12:false}).formatToParts(new Date()),o={};p.forEach(function(x){o[x.type]=x.value});return o}
+function marketOpen(){var o=etParts(),h=parseInt(o.hour)%24,m=parseInt(o.minute),t=h*60+m;return o.weekday!=='Sat'&&o.weekday!=='Sun'&&t>=570&&t<960}
+function nextRun(){var d=new Date();for(var i=0;i<8;i++){var c=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+i,15,0));var w=c.getUTCDay();if(w>0&&w<6&&c>d)return c}}
+function fmt(d,tz){return d.toLocaleString('en-GB',{timeZone:tz,weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit',hour12:true})}
+function latest(){var seen={},out=[];if(!S||!S.events)return out;for(var i=S.events.length-1;i>=0;i--){var e=S.events[i];if(e.event==='rating'&&!seen[e.ticker]){seen[e.ticker]=1;out.unshift(e)}}return out}
+function computeMode(){var running=S&&S.state==='running'&&S.started&&(Date.now()-Date.parse(S.started))<75*60000;
+if(running)return'running';return marketOpen()?'idle':'closed'}
+function render(mode){var b=document.getElementById('banner'),nr=nextRun();
+var nrTxt=nr?fmt(nr,'Asia/Kolkata')+' IST':'-';
+document.getElementById('nx').textContent=nrTxt;
+var o=etParts();document.getElementById('et').textContent=o.weekday+' '+o.hour+':'+o.minute+' ET';
+document.getElementById('eq').textContent=(S&&S.equity)?'$'+Number(S.equity).toLocaleString():'-';
+document.getElementById('upd').textContent=S&&S.updated?S.updated:'-';
+if(mode==='running'){b.className='b-run';b.innerHTML='🟢 The team is working RIGHT NOW<small>The daily trading run is in progress. Watch them below.</small>'}
+else if(mode==='idle'){b.className='b-idle';b.innerHTML='🟡 US market is open, the team is waiting at their desks<small>They do their work once a day. Next run: '+nrTxt+'.</small>'}
+else{b.className='b-off';b.innerHTML='🔴 US stock market is CLOSED, the office is asleep<small>Nobody is working. Next daily run: '+nrTxt+'.</small>'}
+var l=latest(),h='';if(!l.length)h='No real decisions yet.';
+l.forEach(function(e){h+='<div class="line"><b>'+e.ticker+'</b>: '+e.rating+' = '+HUM[e.rating]+' <span class="sub">('+(e.ts||'').slice(0,10)+')</span></div>'});
+var ord=(S&&S.events||[]).filter(function(e){return e.event==='order'}).slice(-3);
+ord.forEach(function(e){h+='<div class="line">Order: '+(e.side||'')+' '+(e.ticker||'')+' <span class="sub">(fake money)</span></div>'});
+document.getElementById('lastTxt').innerHTML=h}
+var cur='';
+async function live(){runner=true;var L=['AAPL','NVDA'],i=0;try{while(true){await cycle(L[i%L.length],null,false);i++}}catch(e){}runner=false}
+async function tick(){var m=computeMode();render(m);
+if(m!==cur&&!replaying){cur=m;gen++;resetAll(m==='closed');
+if(m==='closed'){now('😴 The market is closed, so nobody is working. The office is asleep until the next trading day.');document.getElementById('office').classList.add('dark')}
+else document.getElementById('office').classList.remove('dark');
+if(m==='idle')now('☕ The team is at their desks. They already ran today, or are waiting for the daily run.');
+if(m==='running'){setTimeout(live,100)}}}
+var replaying=false;
+document.getElementById('rp').onclick=async function(){if(replaying)return;replaying=true;gen++;var btn=this;btn.disabled=true;
+document.getElementById('office').classList.remove('dark');resetAll(false);
+try{var l=latest(),it=l.length?l[l.length-1]:{ticker:'AAPL',rating:'Hold'};await cycle(it.ticker,it.rating,true)}catch(e){}
+replaying=false;btn.disabled=false;gen++;cur='';tick()};
+async function load(){try{var r=await fetch('status.json?'+Date.now());S=await r.json()}catch(e){}tick()}
+load();setInterval(load,30000);setInterval(function(){if(!runner)render(computeMode())},15000);
 </script>
 </body></html>
