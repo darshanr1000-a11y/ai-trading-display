@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Trading Team Virtual Office</title>
+<style>
+:root{--bg:#0f1318;--card:#181e26;--line:#2a323d;--tx:#e8edf2;--mu:#8b97a5;--g:#3fb68b;--y:#e0b04a;--r:#e0645c;--b:#5b9bd5}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,sans-serif;padding:16px;max-width:960px;margin:auto}
+h1{font-size:20px;margin:0}.sub{color:var(--mu);font-size:12px}
+.top{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.lbl{color:var(--mu);font-size:11px;text-transform:uppercase;letter-spacing:.06em}.val{font-size:18px;font-weight:600}
+.bar{display:flex;gap:8px;align-items:center;margin:8px 0;flex-wrap:wrap}
+button{background:var(--b);color:#fff;border:0;border-radius:8px;padding:7px 13px;font-size:13px;cursor:pointer}
+#wrap{width:100%;overflow:hidden;border:1px solid var(--line);border-radius:12px}
+#office{position:relative;width:900px;height:540px;transform-origin:0 0;background:#1a2028;background-image:linear-gradient(#222a34 1px,transparent 1px),linear-gradient(90deg,#222a34 1px,transparent 1px);background-size:30px 30px}
+.room{position:absolute;border:2px dashed #34404d;border-radius:12px;color:#5d6b7b;font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:4px 8px}
+.desk{position:absolute;width:70px;height:26px;background:#2d3743;border:1px solid #3a4756;border-radius:5px}
+.emp{position:absolute;width:60px;text-align:center;transition:left 1.3s ease-in-out,top 1.3s ease-in-out;z-index:5}
+.emp .face{font-size:30px;line-height:1}
+.emp.walk .face{animation:step .35s infinite alternate}
+.emp.work .face{animation:type .25s infinite alternate}
+@keyframes step{to{transform:translateY(-5px) rotate(5deg)}}
+@keyframes type{to{transform:translateY(2px)}}
+.emp .nm{font-size:10px;color:#c7d0da;background:#0008;border-radius:4px;padding:0 3px;white-space:nowrap}
+.emp .bubble{position:absolute;bottom:62px;left:50%;transform:translateX(-50%);background:#fff;color:#111;border-radius:8px;padding:3px 7px;font-size:11px;width:max-content;max-width:140px;opacity:0;transition:opacity .25s;z-index:9}
+.emp .bubble.on{opacity:1}
+.emp .doc{position:absolute;right:-6px;top:20px;font-size:18px;display:none}
+.emp.carry .doc{display:block}
+.prog{position:absolute;left:5px;right:5px;bottom:-9px;height:4px;background:#0006;border-radius:3px;overflow:hidden;display:none}
+.emp.work .prog{display:block}.prog i{display:block;height:100%;width:0;background:var(--g)}
+#log{background:#0b0e12;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:12px/1.6 ui-monospace,monospace;height:130px;overflow:auto;color:#a8b4c2;margin-top:10px}
+table{width:100%;border-collapse:collapse;margin-top:10px}td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{color:var(--mu);font-weight:500;font-size:11px}
+.tag{font-size:11px;border-radius:99px;padding:1px 8px;background:#1d3a30;color:var(--g)}
+.note{color:var(--mu);font-size:12px;margin-top:12px}
+</style></head><body>
+<h1>AI Trading Team: Virtual Office</h1>
+<div class="sub">Paper trading only (fake money) · Connected to the trading bot on GitHub · Refreshes every 30 seconds</div>
+<div class="top">
+<div class="card"><div class="lbl">Account equity</div><div class="val" id="eq">-</div></div>
+<div class="card"><div class="lbl">Last real run</div><div class="val" id="lr">-</div></div>
+<div class="card"><div class="lbl">Open positions</div><div class="val" id="pos">-</div></div>
+<div class="card"><div class="lbl">Now in the office</div><div class="val" id="cur">-</div></div>
+<div class="card"><div class="lbl">Data updated</div><div class="val" id="upd" style="font-size:13px">-</div></div>
+</div>
+<div class="bar"><button id="pp">Pause</button><button id="sp">Speed: normal</button><span class="sub" id="mode"></span></div>
+<div id="wrap"><div id="office">
+<div class="room" style="left:20px;top:20px;width:400px;height:130px">Research floor</div>
+<div class="room" style="left:450px;top:20px;width:200px;height:130px">Debate room</div>
+<div class="room" style="left:680px;top:20px;width:200px;height:130px">Research manager</div>
+<div class="room" style="left:300px;top:190px;width:300px;height:120px">Trading desk</div>
+<div class="room" style="left:20px;top:340px;width:400px;height:170px">Risk corner</div>
+<div class="room" style="left:450px;top:340px;width:200px;height:170px">Portfolio manager</div>
+<div class="room" style="left:680px;top:340px;width:200px;height:170px">Broker window (Alpaca)</div>
+</div></div>
+<div id="log"></div>
+<table id="hist"><tr><th>Time (UTC)</th><th>Stock</th><th>Event</th><th>Result</th></tr></table>
+<div class="note">The office re-enacts the team's real decisions from the bot's latest log. When no real run is available it shows a demo. Not financial advice.</div>
+<script>
+var off=document.getElementById('office'),wrap=document.getElementById('wrap'),logEl=document.getElementById('log');
+function fit(){var s=Math.min(1,wrap.clientWidth/900);off.style.transform='scale('+s+')';wrap.style.height=(540*s)+'px'}
+window.addEventListener('resize',fit);fit();
+var speed=1,paused=false,S=null;
+function sleep(ms){return new Promise(function(r){var t=ms/speed,st=Date.now();(function w(){if(paused){setTimeout(w,200);st+=200;return}if(Date.now()-st>=t)r();else setTimeout(w,40)})()})}
+function log(t){logEl.innerHTML+=new Date().toTimeString().slice(0,8)+'  '+t+'<br>';logEl.scrollTop=logEl.scrollHeight}
+var P={mkt:['📈','Market Analyst',40,70],soc:['💬','Social Analyst',125,70],news:['📰','News Analyst',210,70],fund:['📊','Fundamentals',295,70],
+bull:['🐂','Bull Researcher',480,70],bear:['🐻','Bear Researcher',570,70],rm:['🧑‍⚖️','Research Manager',750,70],tr:['💼','Trader',420,235],
+ra:['🔥','Aggressive Risk',40,400],rn:['⚖️','Neutral Risk',140,400],rc:['🛡️','Cautious Risk',240,400],pm:['🏛️','Portfolio Manager',520,400],br:['🏦','Broker',750,400]};
+var E={};
+Object.keys(P).forEach(function(k){var p=P[k];var dk=document.createElement('div');dk.className='desk';dk.style.left=(p[2]-5)+'px';dk.style.top=(p[3]+48)+'px';off.appendChild(dk);
+var e=document.createElement('div');e.className='emp';e.style.left=p[2]+'px';e.style.top=p[3]+'px';
+e.innerHTML='<div class="bubble"></div><div class="face">'+p[0]+'</div><div class="doc">📄</div><div class="nm">'+p[1]+'</div><div class="prog"><i></i></div>';
+off.appendChild(e);E[k]={el:e,hx:p[2],hy:p[3],b:e.querySelector('.bubble'),pg:e.querySelector('.prog i')}});
+async function go(k,x,y){var e=E[k];e.el.classList.add('walk');e.el.style.left=x+'px';e.el.style.top=y+'px';await sleep(1350);e.el.classList.remove('walk')}
+function home(k){return go(k,E[k].hx,E[k].hy)}
+async function say(k,t,ms){var b=E[k].b;b.textContent=t;b.classList.add('on');await sleep(ms||1400);b.classList.remove('on')}
+async function work(k,t,ms){var e=E[k];e.el.classList.add('work');e.b.textContent=t;e.b.classList.add('on');var s=Date.now();e.pg.style.width='0';
+await new Promise(function(r){(function tick(){var f=Math.min(1,(Date.now()-s)*speed/ms);e.pg.style.width=(f*100)+'%';if(f>=1)r();else setTimeout(tick,60)})()});
+e.el.classList.remove('work');e.b.classList.remove('on')}
+function carry(k,on){E[k].el.classList.toggle('carry',on)}
+async function cycle(tk,r,real){
+document.getElementById('cur').textContent=tk+(real?' (real result)':' (demo)');log('=== Analysis of '+tk+(real?' [REAL decision]':' [demo]')+' ===');
+var a=['mkt','soc','news','fund'],msg=['Reading charts','Scanning sentiment','Reading headlines','Checking financials'];
+await Promise.all(a.map(function(k,i){return work(k,msg[i]+'...',2600+i*300)}));
+log('Analysts finished');a.forEach(function(k){carry(k,true)});
+await Promise.all([go('mkt',480,120),go('soc',540,120),go('news',600,120),go('fund',560,95)]);
+a.forEach(function(k){carry(k,false)});
+await say('bull','Strong demand ahead, buy!',1500);await say('bear','Valuation is stretched.',1500);
+await say('bull','Earnings beat last quarter.',1400);await say('bear','Risks are being ignored.',1400);
+log('Bull and bear debated '+tk);
+carry('bull',true);await go('bull',700,100);await say('rm','Reviewing both sides...',1500);carry('bull',false);
+await work('rm','Weighing the debate',2200);
+carry('rm',true);await go('rm',470,245);carry('rm',false);carry('tr',true);
+await work('tr','Drafting trade plan',2200);
+await Promise.all([go('tr',230,300),go('rm',750,70),go('bull',E.bull.hx,E.bull.hy),home('mkt'),home('soc'),home('news'),home('fund')]);
+await Promise.all([work('ra','Could go bigger',2000),work('rn','Size looks fair',2300),work('rc','Keep it small',2000)]);
+log('Risk team reviewed the plan');
+await go('tr',470,330);await say('tr','Risk team signed off',1200);await go('tr',520,360);carry('tr',false);
+await work('pm','Making the final call',2200);
+await say('pm','Final rating: '+r,1700);log(tk+' rating: '+r+(real?' (REAL)':' (demo)'));
+if(r!=='Hold'){carry('pm',true);await go('pm',700,400);carry('pm',false);
+await say('br',(r==='Buy'||r==='Overweight'?'BUY ':'SELL ')+tk+' (paper)',2000);log('Paper order sent to Alpaca');await home('pm')}
+else{await say('pm','No trade needed',1200)}
+await Promise.all([home('tr'),home('rm'),home('ra'),home('rn'),home('rc')]);await sleep(1500)}
+function latest(){var seen={},out=[];if(!S||!S.events)return out;
+for(var i=S.events.length-1;i>=0;i--){var e=S.events[i];if(e.event==='rating'&&!seen[e.ticker]){seen[e.ticker]=1;out.unshift(e)}}return out}
+function render(){if(!S)return;
+document.getElementById('eq').textContent=S.equity?'$'+Number(S.equity).toLocaleString():'-';
+document.getElementById('pos').textContent=(S.positions!=null?S.positions:'-');
+document.getElementById('upd').textContent=S.updated||'-';
+var l=latest();document.getElementById('lr').textContent=l.length?l[l.length-1].ticker+': '+l[l.length-1].rating:'none yet';
+var h='<tr><th>Time (UTC)</th><th>Stock</th><th>Event</th><th>Result</th></tr>';
+(S.events||[]).slice(-8).reverse().forEach(function(e){h+='<tr><td>'+(e.ts||'').slice(0,16).replace('T',' ')+'</td><td>'+(e.ticker||'-')+'</td><td>'+e.event+'</td><td><span class="tag">'+(e.rating||e.reason||e.side||e.error||'ok')+'</span></td></tr>'});
+document.getElementById('hist').innerHTML=h}
+async function load(){try{var r=await fetch('status.json?'+Date.now());S=await r.json();render()}catch(e){}}
+async function main(){await load();setInterval(load,30000);var i=0;
+while(true){var l=latest(),d=['AAPL','NVDA'],tk,r,real=false;
+if(l.length){var it=l[i%l.length];tk=it.ticker;r=it.rating;real=true}
+else{tk=d[i%2];r=['Buy','Overweight','Hold','Underweight','Sell'][Math.floor(Math.random()*5)]}
+document.getElementById('mode').textContent=real?'Showing real decisions from the bot':'No real run yet: showing demo';
+await cycle(tk,r,real);i++}}
+document.getElementById('pp').onclick=function(){paused=!paused;this.textContent=paused?'Resume':'Pause'};
+document.getElementById('sp').onclick=function(){speed=speed===1?2:(speed===2?0.5:1);this.textContent='Speed: '+(speed===1?'normal':speed===2?'fast':'slow')};
+main();
+</script>
+</body></html>
